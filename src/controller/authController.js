@@ -1,4 +1,4 @@
-import { createUser, findUserByEmail } from '../models/userModel.js';
+import { createUser, findUserByEmail, updateUserByEmail } from '../models/userModel.js';
 
 // Cadastro
 async function register(req, res) {
@@ -12,7 +12,6 @@ async function register(req, res) {
     }
     // Caso nao exista, ele cria um novo usuário
     const user = await createUser(nome, email, senha);
-    // Responde a requisição com o novo usuario criado
     res.status(201).json({
       message: 'Usuário criado com sucesso',
       user
@@ -30,10 +29,11 @@ async function login(req, res) {
     const user = await findUserByEmail(email);
 
     if (!user || user.senha !== senha) {
-      return res.status(401).json({ message: 'Credenciais inválidas' });
+      return res.status(401).json({ 
+        message: 'Credenciais inválidas' });
     }
     delete user.senha;
-    
+
     res.json({
       message: 'Login realizado com sucesso',
       user
@@ -43,4 +43,23 @@ async function login(req, res) {
   }
 }
 
-export { register, login };
+async function atualizar(req, res) {
+  try{
+    const {email, novoNome, novoEmail, novaSenha} = req.body;
+    if (!email || !novoNome || !novoEmail || !novaSenha){
+      return res.status(404).json({ 
+          message: 'Requisição incompleta!' })
+    }
+    // Verificando se o usuario existe
+    const existingUser = await findUserByEmail(email);
+    if (!existingUser) {
+      return res.status(400).json({ message: 'Usuario não existe' });
+    };
+    const updateUser = await updateUserByEmail(email, novoNome, novoEmail, novaSenha)
+    return res.status(201).json(updateUser);
+    
+  }catch (error){
+    return res.status(404).json({erro: error})
+  }
+}
+export { register, login , atualizar };
