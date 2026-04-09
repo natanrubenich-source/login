@@ -1,4 +1,4 @@
-import { createUser, findUserByEmail, updateUserByEmail } from '../models/userModel.js';
+import { createUser, findUserByEmail, findUserByID, updateUserByID} from '../models/userModel.js';
 
 // Cadastro
 async function register(req, res) {
@@ -45,21 +45,23 @@ async function login(req, res) {
 
 async function atualizar(req, res) {
   try{
-    const {email, novoNome, novoEmail, novaSenha} = req.body;
-    if (!email || !novoNome || !novoEmail || !novaSenha){
+    const {id, novoNome, novoEmail, novaSenha} = req.body;
+    if (!id || !novoNome || !novoEmail || !novaSenha){   
       return res.status(404).json({ 
           message: 'Requisição incompleta!' })
     }
     // Verificando se o usuario existe
-    const existingUser = await findUserByEmail(email);
+    const existingUser = await findUserByID(id);
     if (!existingUser) {
       return res.status(400).json({ message: 'Usuario não existe' });
     };
-    const updateUser = await updateUserByEmail(email, novoNome, novoEmail, novaSenha)
+
+    const updateUser = await updateUserByID(id, novoNome, novoEmail, novaSenha)
     return res.status(201).json(updateUser);
-    
+
   }catch (error){
     return res.status(404).json({erro: error})
   }
 }
+
 export { register, login , atualizar };
