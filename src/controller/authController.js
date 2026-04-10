@@ -27,17 +27,19 @@ async function login(req, res) {
 
   try {
     const user = await findUserByEmail(email);
+    const comparandoHash = bcrypt.compare(senha, user.senha)
 
-    if (!user || user.senha !== senha) {
+    if (!comparandoHash) {
       return res.status(401).json({ 
         message: 'Credenciais inválidas' });
     }
     delete user.senha;
-
+    // Assinar e retornar o JWT
     res.json({
       message: 'Login realizado com sucesso',
       user
     });
+    
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
