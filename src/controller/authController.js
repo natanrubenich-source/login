@@ -1,8 +1,11 @@
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import { createUser, findUserByEmail, findUserByID, updateUserByID} from '../models/userModel.js';
 
 // Cadastro
 async function register(req, res) {
-  const { nome, email, senha } = req.body;
+  const { nome, email, senha, role_user } = req.body;
+  const new_role_user = role_user.toLowerCase().trim();
 
   try {
     // Verifica de o usuario já existe
@@ -11,7 +14,9 @@ async function register(req, res) {
       return res.status(400).json({ message: 'Email já existe' });
     }
     // Caso nao exista, ele cria um novo usuário
-    const user = await createUser(nome, email, senha);
+    const user = await createUser(nome, email, senha, new_role_user);
+    delete user.senha;
+
     res.status(201).json({
       message: 'Usuário criado com sucesso',
       user
@@ -22,7 +27,7 @@ async function register(req, res) {
 }
 
 // Login
-async function login(req, res) {
+async function login(req, res) {  
   const { email, senha } = req.body;
 
   try {
@@ -32,13 +37,16 @@ async function login(req, res) {
     if (!comparandoHash) {
       return res.status(401).json({ 
         message: 'Credenciais inválidas' });
-    }
+    };
     delete user.senha;
-    // Assinar e retornar o JWT
-    res.json({
-      message: 'Login realizado com sucesso',
-      user
-    });
+    // Assinando o token
+    const userVerify = jwt.sign(
+      user, 
+      process.env.JWT_SECRET, 
+      { expiresIn: process.env.JWT_EXPIRES_IN},
+    );
+
+    res.json({token: userVerify});
     
   } catch (error) {
     res.status(500).json({ error: error.message });

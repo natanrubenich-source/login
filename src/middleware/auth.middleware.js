@@ -2,20 +2,33 @@ import jwt from 'jsonwebtoken';
 
 export async function autenticarJWT(req, res, next) {
     try {
-        const Auth = req.headers['Authorization'];
-        // Verificando o Authorization no Header
-        if(!Auth || !Auth.startWith['Bearer']){
-            return res.status(401).json({erro: 'Token Invalido'});
+        const authHeader = req.headers['authorization'];
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ erro: 'Token não fornecido ou formato inválido' });
         }
-        // Tratando o Token 
-        const Token = Auth.split(' ')[1];
 
-        // Verificar (verify) o token
-        const resVerify = jwt.verify(Token, process.env.JWT_SECRET);
-        req.body= resVerify;
+        const token = authHeader.split(' ')[1];
+        
+        // Verifica o token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        req.user = decoded; 
+        
         next();
-
     } catch (error) {
-        res.status(401).json({ erro: 'Token inválido ou expirado' });
+        return res.status(401).json({ erro: 'Token inválido ou expirado' });
     }
+}
+
+export function checkRole(roles) {
+    return (req, res, next) => {
+        const userRole = req.user.role_user;
+        console.log(userRole);
+        
+        if (!req.user || !roles.includes(userRole)) {
+            return res.status(403).json({ erro: 'Acesso negado: permissão insuficiente' });
+        }
+        next();
+    };
 }
