@@ -40,13 +40,13 @@ async function login(req, res) {
     };
     delete user.senha;
     // Assinando o token
-    const userVerify = jwt.sign(
+    const userToken = jwt.sign(
       user, 
       process.env.JWT_SECRET, 
       { expiresIn: process.env.JWT_EXPIRES_IN},
     );
 
-    res.json({token: userVerify});
+    res.json({token: userToken, user: user});
     
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -9,13 +9,11 @@ export async function autenticarJWT(req, res, next) {
         }
 
         const token = authHeader.split(' ')[1];
-        
         // Verifica o token
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
         req.user = decoded; 
-        
         next();
+
     } catch (error) {
         return res.status(401).json({ erro: 'Token inválido ou expirado' });
     }
@@ -24,7 +22,9 @@ export async function autenticarJWT(req, res, next) {
 export function checkRole(roles) {
     return (req, res, next) => {
         const userRole = req.user.role_user;
-        console.log(userRole);
+        console.log(req.user);
+        
+        console.log(`\nClient: ${userRole} | Usuario: ${userRole}`);
         
         if (!req.user || !roles.includes(userRole)) {
             return res.status(403).json({ erro: 'Acesso negado: permissão insuficiente' });

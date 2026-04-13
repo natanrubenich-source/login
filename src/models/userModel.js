@@ -51,13 +51,14 @@ async function findUserByID(id) {
 
 async function updateUserByID(id, novoNome, novoEmail, novaSenha) {
   try {
+    const novaSenhaHash = bcrypt.hash(novaSenha, 10)
    const query = `
       UPDATE usuarios 
       SET nome = $1, email = $2, senha = $3 
       WHERE id = $4 
       RETURNING *;
     `;
-    const values = [novoNome, novoEmail, novaSenha, id];
+    const values = [novoNome, novoEmail, novaSenhaHash, id];
     const result = await db.query(query, values);
 
     if (result.rows.length === 0) {
