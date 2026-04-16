@@ -33,7 +33,6 @@ async function login(req, res) {
   try {
     const user = await findUserByEmail(email);
     const comparandoHash = bcrypt.compare(senha, user.senha)
-
     if (!comparandoHash) {
       return res.status(401).json({ 
         message: 'Credenciais inválidas' });
